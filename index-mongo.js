@@ -28,36 +28,65 @@ app.get('/frases', (req, res) => {
 })
 
 app.post('/frases', (req, res) => {
-    console.log(req.body);
-    const frase = req.body;
-    frases.push(frase);
+    const frase = {
+        autor: req.body.autor,
+        frase: req.body.autor
+    }
+    Frase.create(frase)
+        .then((f) => {
+            res.send(f);
+            res.status(201).send(f);
+        })
+        .catch((err) => {
+            console.error(err);
+            res.status(500).send();
+        })
+    
     res.status(201).send();
 })
 
+app.post('/variasfrases', (req, res) => {
+    const frases = req.body;
+    if (!Array.isArray(frases)) {
+        return res.status(400).send();
+    }
+
+    Frase.insertMany(frases)
+        .then((frases) => {
+            res.status(201).send(frases);
+        })
+        .catch((err) => {
+            console.error(err);
+            res.status(500).send();
+        });
+});
+
+
 app.delete('/frases/:id', (req, res) => {
     const id = req.params.id;
-    const index = frases.findIndex((frase) => frase.id == id);
-    if(index == -1){
-        res.status(404).send();
-    } else{
-        frases.splice(index, 1);
-        res.status(200).send();
-    }
-    console.log(req.body);
+    Frase.findByIdAndDelete(id)
+        .then(() => res.status(200).send())
+        .catch(() => res.status(404).send());
+
 
 })
 
 app.put('frases/:id', (req, res) => {
     const id = req.params.id;
-    const frase = req.body;
-    const index = frases.findIndex((frase) => frase.id == id);
-    if(index == -1){
-        res.status(404).send();
-    }else{
-        frases[index].autor = frase.autor;
-        frases[index].frase = frase.frase;
-        res.status(200).send();
-    }
+    const f = req.body;
+
+    Frase.findById(id)
+        .then((frase) => {
+            frase.autor = f.autor;
+            frase.frase = f.frase;
+            frase.save()
+                .then(() => res.status(200).send())
+                .catch(() => res.status(500).send())
+        })
+        .catch(err => {
+            console.error(err);
+            res.status(404).send();
+        })
 })
 
     
