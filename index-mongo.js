@@ -1,15 +1,30 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const Frase = require('./frase.model');
 const app = express();
 
 app.use(express.json());
+
+const db_host = 'localhost';
+const db_port = 27017;
+const db_db = 'frases';
+const db_URI = `mongodb:\/\/${db_host}:${db_port}/${db_db}`
+
+mongoose.connect(db_URI, { useNewUrlParser : true});
+
 
 app.get('/', (req, res) => {
     res.send("Prog. Web - Wello World.");
 })
 
 app.get('/frases', (req, res) => {
-    res.send(frases);
+    Frase.find({})
+        .then((frases) => {
+            res.send(frases);
+        })
+        .catch((err) => {
+            res.status(500).send();
+        })
 })
 
 app.post('/frases', (req, res) => {
